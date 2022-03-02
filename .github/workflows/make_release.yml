@@ -1,0 +1,50 @@
+name: Make a Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      name:
+        description: 'The name for the release'
+        required: true
+
+jobs:
+  make_release:
+    runs-on: windows-2019
+
+    steps:
+    - name: Download the Source
+      uses: actions/checkout@v2
+    - name: Build the Program
+      shell: cmd
+      run: |
+        7z x Be.HexEditor.142.7z
+        7z x taoframework-2.1.0.7z
+        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x86
+        mkdir "Cache Editor\bin"
+        mkdir "Cache Editor\bin\Release"
+        mkdir "Cache Editor\bin\Release\Plugins"
+        mkdir "Cache Editor API\bin"
+        mkdir "Cache Editor API\bin\Release"
+        mkdir "HexEditor\bin"
+        mkdir "HexEditor\bin\Release"
+        copy taoframework-2.1.0\bin\*.* "Cache Editor API\bin\Release"
+        copy Be.HexEditor.142\bin\*.* "Cache Editor\bin\Release\Plugins"
+        msbuild "Cache Editor.sln" /p:Configuration=Release /p:Platform="Any CPU"
+        7z a CacheSuite.7z output is "Cache Editor\bin\Release"
+    - name: Make a Release
+      id: ReleaseID
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.event.inputs.name }}
+        release_name: ${{ github.event.inputs.name }}
+    - name: Upload the Files 1
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.ReleaseID.outputs.upload_url }}
+        asset_path: CacheSuite.7z
+        asset_name: CacheSuite.7z
+        asset_content_type: application/octet-stream
