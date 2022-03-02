@@ -30,7 +30,7 @@ jobs:
         copy taoframework-2.1.0\bin\*.* "Cache Editor API\bin\Release"
         copy Be.HexEditor.142\bin\*.* "Cache Editor\bin\Release\Plugins"
         msbuild "Cache Editor.sln" /p:Configuration=Release /p:Platform="Any CPU"
-        7z a CacheSuite.7z output is "Cache Editor\bin\Release"
+        7z a CacheSuite.7z "Cache Editor\bin\Release"
     - name: Make a Release
       id: ReleaseID
       uses: actions/create-release@v1
